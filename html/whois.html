@@ -14,8 +14,9 @@
         .search-box select:focus { border-color: var(--accent-dark); }
         .search-box button { padding: 0.8rem 2rem; border: none; border-radius: 50px; background: var(--accent-dark); color: #fff; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
         .search-box button:hover { background: #00695c; }
+        .search-box .ali-btn { background: #ff6a00; color: #fff; margin-left: 0.5rem; }
+        .search-box .ali-btn:hover { background: #e55a00; }
 
-        /* 查询源选择区 */
         .source-selector {
             background: rgba(255,255,255,0.6);
             backdrop-filter: blur(6px);
@@ -72,6 +73,7 @@
             .source-selector .source-group { display: flex; flex-direction: column; align-items: flex-start; gap: 0.3rem; }
             .source-selector .actions { margin-left: 0; margin-top: 0.5rem; }
             .search-box select { flex: 1; min-width: 80px; }
+            .search-box .ali-btn { margin-left: 0; margin-top: 0.5rem; width: 100%; }
         }
 
         .loading { text-align: center; color: var(--text-muted); padding: 1rem; display: none; }
@@ -93,6 +95,7 @@
         .raw-data-btn:hover { background: rgba(0,137,123,0.1); }
         .raw-data-box { display: none; background: #2d3436; color: #dfe6e9; padding: 1rem; border-radius: var(--radius); overflow-x: auto; margin-top: 0.5rem; font-family: monospace; font-size: 0.85rem; max-height: 300px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
         .raw-data-box.active { display: block; }
+        .ali-notice { margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-muted); }
     </style>
 </head>
 <body>
@@ -122,6 +125,8 @@
                 <option value=".online">.online</option>
             </select>
             <button id="queryBtn">查询</button>
+            <!-- 阿里云外部查询按钮 -->
+            <button id="aliBtn" class="ali-btn">☁️ 阿里云查询</button>
         </div>
 
         <!-- 查询源选择器 -->
@@ -158,7 +163,8 @@
         </div>
 
         <div class="batch-hint">💡 输入完整域名（含后缀）将自动忽略下拉框选项</div>
-        <div class="footer-note">数据来源：免费 WHOIS API · 信息仅供参考</div>
+        <div class="ali-notice">☁️ 点击“阿里云查询”将在新窗口打开阿里云官方 WHOIS 页面，实时查询注册信息。</div>
+        <div class="footer-note">数据来源：多个免费 WHOIS API · 信息仅供参考</div>
     </div>
 
     <div id="footer-container"></div>
@@ -167,18 +173,23 @@
     <script>
         (function() {
             document.addEventListener('DOMContentLoaded', function() {
-                // ===== 定义 API 源列表 =====
+                // ===== 定义 API 源列表（所有免费可用源） =====
                 const SOURCES = [
                     { id: 'vercel', name: 'Vercel WHOIS', url: 'https://whois-api.vercel.app/api/whois' },
-                    { id: 'whoisvu', name: 'whois.vu', url: 'https://api.whois.vu/whois' }
-                    // 可继续添加更多源，例如：
-                    // { id: 'whoisws', name: 'whois.ws', url: 'https://whois.ws/whois' }
+                    { id: 'whoisvu', name: 'whois.vu', url: 'https://api.whois.vu/whois' },
+                    { id: 'whodat', name: 'who-dat.as93.net', url: 'https://who-dat.as93.net' },
+                    { id: 'rdap', name: 'RDAP.org', url: 'https://rdap.org/domain' },
+                    { id: 'devopsclub', name: 'devopsclub.cn', url: 'https://api.devopsclub.cn/api/whoisquery' },
+                    { id: 'librespeed', name: 'librespeed.cn', url: 'http://whois.librespeed.cn/api' },
+                    { id: 'kiprio', name: 'kiprio.com (免费层)', url: 'https://kiprio.com/v1/whois' },
+                    { id: 'mcp', name: 'mcp.domaindetails.com', url: 'https://mcp.domaindetails.com/lookup' }
                 ];
 
                 // DOM 元素
                 const input = document.getElementById('domainInput');
                 const suffixSelect = document.getElementById('domainSuffix');
                 const btn = document.getElementById('queryBtn');
+                const aliBtn = document.getElementById('aliBtn');
                 const loading = document.getElementById('loading');
                 const errorMsg = document.getElementById('errorMsg');
                 const errorText = document.getElementById('errorText');
@@ -201,10 +212,10 @@
                 // ===== 渲染源复选框 =====
                 function renderSourceCheckboxes() {
                     let html = '';
-                    SOURCES.forEach((src, index) => {
+                    SOURCES.forEach((src) => {
                         html += `
                             <label>
-                                <input type="checkbox" value="${src.id}" data-url="${src.url}" ${index === 0 ? 'checked' : ''} />
+                                <input type="checkbox" value="${src.id}" data-url="${src.url}" ${src.id === 'vercel' ? 'checked' : ''} />
                                 ${src.name}
                             </label>
                         `;
@@ -229,10 +240,36 @@
                     const selected = [];
                     checkboxes.forEach(cb => {
                         if (cb.checked) {
-                            selected.push(cb.dataset.url);
+                            const url = cb.dataset.url;
+                            const id = cb.value;
+                            selected.push({ id, url });
                         }
                     });
                     return selected;
+                }
+
+                // ===== 构建特定 API 的完整 URL =====
+                function buildApiUrl(baseUrl, domain) {
+                    // 根据不同的源，构建不同的 URL 格式
+                    const id = baseUrl.id;
+                    const url = baseUrl.url;
+                    if (id === 'whodat') {
+                        return `${url}/${domain}`;
+                    } else if (id === 'rdap') {
+                        return `${url}/${domain}`;
+                    } else if (id === 'devopsclub') {
+                        return `${url}?domain=${domain}`;
+                    } else if (id === 'librespeed') {
+                        return `${url}?domain=${domain}`;
+                    } else if (id === 'kiprio') {
+                        return `${url}?domain=${domain}`;
+                    } else if (id === 'mcp') {
+                        return `${url}/${domain}`; // 可能路径为 /lookup/{domain}，但原 URL 是 /lookup
+                        // 我们已经在 base 中包含了 /lookup，所以直接拼接 domain
+                    } else {
+                        // 默认 ?domain=
+                        return `${url}?domain=${domain}`;
+                    }
                 }
 
                 // ===== 核心查询函数 =====
@@ -252,8 +289,8 @@
                         return;
                     }
 
-                    const selectedUrls = getSelectedSources();
-                    if (selectedUrls.length === 0) {
+                    const selectedSources = getSelectedSources();
+                    if (selectedSources.length === 0) {
                         showError('请至少选择一个查询源');
                         return;
                     }
@@ -265,9 +302,9 @@
                     errorMsg.classList.remove('active');
 
                     let lastError = null;
-                    for (const url of selectedUrls) {
+                    for (const src of selectedSources) {
                         try {
-                            const apiUrl = `${url}?domain=${encodeURIComponent(fullDomain)}`;
+                            const apiUrl = buildApiUrl(src, fullDomain);
                             const controller = new AbortController();
                             const timeoutId = setTimeout(() => controller.abort(), 15000);
                             const response = await fetch(apiUrl, { signal: controller.signal });
@@ -343,6 +380,23 @@
                 // ===== 事件绑定 =====
                 btn.addEventListener('click', () => queryWhois(input.value));
                 input.addEventListener('keydown', (e) => { if (e.key === 'Enter') btn.click(); });
+
+                // 阿里云查询按钮 - 在新窗口打开阿里云 WHOIS 页面
+                aliBtn.addEventListener('click', function() {
+                    let domain = input.value.trim();
+                    if (!domain) {
+                        alert('请先输入要查询的域名');
+                        return;
+                    }
+                    // 如果输入不包含后缀，自动添加选中的后缀
+                    if (!domain.includes('.')) {
+                        domain += suffixSelect.value;
+                    }
+                    // 移除协议前缀
+                    domain = domain.replace(/^https?:\/\//, '').replace(/^www\./, '');
+                    const aliUrl = `https://wanwang.aliyun.com/domain/whois?domain=${encodeURIComponent(domain)}`;
+                    window.open(aliUrl, '_blank');
+                });
 
                 manualLink.style.display = 'none';
 
