@@ -72,23 +72,38 @@ function renderProjects(projects) {
     grid.innerHTML = html;
 }
 
-// ===== 加载联系方式并渲染（仅联系页） =====
+// ===== 加载联系方式和二维码（仅联系页） =====
 async function loadContactInfo() {
-    const grid = document.getElementById('contactGrid');
-    if (!grid) return;
+    const contactGrid = document.getElementById('contactGrid');
+    const qrcodeContainer = document.getElementById('qrcodeContainer');
+    if (!contactGrid && !qrcodeContainer) return;
 
     try {
         const response = await fetch('../contact.json');
         if (!response.ok) throw new Error('无法加载联系方式');
-        const contacts = await response.json();
-        renderContacts(contacts, grid);
+        const data = await response.json();
+
+        // 兼容旧数组格式和新对象格式
+        if (Array.isArray(data)) {
+            renderContacts(data, contactGrid);
+        } else {
+            if (data.contacts && Array.isArray(data.contacts)) {
+                renderContacts(data.contacts, contactGrid);
+            }
+            if (data.qrcode && data.qrcode.image) {
+                renderQrcode(data.qrcode, qrcodeContainer);
+            }
+        }
     } catch (error) {
-        grid.innerHTML = '<div class="empty-tip">⚠️ 加载联系方式失败，请稍后重试。</div>';
+        if (contactGrid) {
+            contactGrid.innerHTML = '<div class="empty-tip">⚠️ 加载联系方式失败，请稍后重试。</div>';
+        }
         console.error('加载 contact.json 出错:', error);
     }
 }
 
 function renderContacts(contacts, container) {
+    if (!container) return;
     if (!Array.isArray(contacts) || contacts.length === 0) {
         container.innerHTML = '<div class="empty-tip">暂无联系方式。</div>';
         return;
@@ -96,7 +111,6 @@ function renderContacts(contacts, container) {
 
     let html = '';
     contacts.forEach(c => {
-        // 移除按钮，仅显示纯文本
         html += `
             <div class="contact-card">
                 <div class="contact-icon">${c.icon}</div>
@@ -106,6 +120,40 @@ function renderContacts(contacts, container) {
         `;
     });
     container.innerHTML = html;
+}
+
+function renderQrcode(qrcode, container) {
+    if (!container) return;
+    if (!qrcode || !qrcode.image) return;
+
+    container.style.display = 'block';
+    const img = document.getElementById('qrcodeImage');
+    if (img) {
+        img.src = qrcode.image;
+        img.alt = qrcode.alt || '二维码';
+    }
+
+    // 绑定点击放大事件
+    const overlay = document.getElementById('imageOverlay');
+    const overlayImg = document.getElementById('overlayImage');
+    const closeBtn = document.getElementById('overlayClose');
+
+    if (img && overlay && overlayImg && closeBtn) {
+        img.addEventListener('click', () => {
+            overlayImg.src = img.src;
+            overlay.style.display = 'flex';
+        });
+
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay || e.target === closeBtn) {
+                overlay.style.display = 'none';
+            }
+        });
+
+        closeBtn.addEventListener('click', () => {
+            overlay.style.display = 'none';
+        });
+    }
 }
 
 // ===== 页面初始化 =====
