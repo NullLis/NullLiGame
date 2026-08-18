@@ -1,5 +1,17 @@
-// ===== 公共导航与页脚（统一管理） =====
+// ===== 公共导航与页脚（统一管理，支持动态路径） =====
 
+// 获取当前页面的路径深度（用于生成相对路径）
+function getBasePath() {
+    const path = window.location.pathname;
+    // 如果当前页面在 html/ 子目录下，返回 '../'
+    if (path.includes('/html/')) {
+        return '../';
+    }
+    // 如果在根目录，返回 './'
+    return './';
+}
+
+const basePath = getBasePath();
 // 获取当前页面文件名（用于高亮菜单）
 const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 
@@ -7,12 +19,12 @@ const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 function getNavbarHTML() {
     return `
     <nav class="navbar">
-        <a href="index.html" class="nav-logo">🧩 项目集</a>
+        <a href="${basePath}index.html" class="nav-logo">🧩 项目集</a>
         <button class="nav-toggle" id="navToggle">☰</button>
         <ul class="nav-links" id="navLinks">
-            <li><a href="index.html" id="navIndex">首页</a></li>
-            <li><a href="tools.html" id="navTools">🔧 实用工具</a></li>
-            <li><a href="html/contact.html" id="navContact">联系我们</a></li>
+            <li><a href="${basePath}index.html" id="navIndex">首页</a></li>
+            <li><a href="${basePath}html/tools.html" id="navTools">🔧 实用工具</a></li>
+            <li><a href="${basePath}html/contact.html" id="navContact">联系我们</a></li>
         </ul>
     </nav>`;
 }
@@ -31,7 +43,6 @@ function getFooterHTML() {
 
 // ===== 注入导航和页脚 =====
 function initLayout() {
-    // 导航
     const navContainer = document.getElementById('navbar-container');
     if (navContainer) {
         navContainer.innerHTML = getNavbarHTML();
@@ -46,13 +57,11 @@ function initLayout() {
         if (activeLink) activeLink.classList.add('active');
     }
 
-    // 页脚
     const footerContainer = document.getElementById('footer-container');
     if (footerContainer) {
         footerContainer.innerHTML = getFooterHTML();
     }
 
-    // 移动端导航切换（由 initNavigation 处理）
     initNavigation();
 }
 
@@ -225,15 +234,8 @@ function renderImages(images, container) {
 
 // ===== 页面初始化 =====
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. 注入导航和页脚（已包含导航高亮 + 移动端切换）
     initLayout();
-
-    // 2. 随机主题色
     applyRandomTheme();
-
-    // 3. 加载项目数据（如果页面有 projectGrid）
     loadProjects();
-
-    // 4. 加载联系方式（如果页面有 contactGrid）
     loadContactInfo();
 });
