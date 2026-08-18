@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>域名信息查询工具</title>
+    <style>
+        /* ===== 青绿色主题（与 Whether 官网一致） ===== */
+        :root {
+            --nav-height: 64px;
+            --accent: #26a69a;
+            --accent-dark: #00897b;
+            --text: #1e272e;
+            --text-muted: #3d4f5f;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(255, 255, 255, 0.7);
+            --shadow-sm: 0 8px 20px rgba(0,0,0,0.05);
+            --shadow-md: 0 12px 28px rgba(0,0,0,0.08);
+            --radius: 20px;
+            --transition: 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+            background: linear-gradient(160deg, #e0f2f1 0%, #b2dfdb 30%, #80cbc4 70%, #4db6ac 100%);
+            background-attachment: fixed;
+            color: var(--text);
+            line-height: 1.7;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 880px;
+            width: 100%;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            padding: 2.5rem 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--card-border);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00695c, var(--accent-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 0.2rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 0.8rem 1.2rem;
+            border: 2px solid #ddd;
+            border-radius: 50px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+            background: rgba(255,255,255,0.7);
+            min-width: 200px;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent-dark);
+        }
+
+        .search-box button {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 50px;
+            background: var(--accent-dark);
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            white-space: nowrap;
+        }
+
+        .search-box button:hover {
+            background: #00695c;
+        }
+
+        .search-box button:active {
+            transform: scale(0.96);
+        }
+
+        .result-area {
+            margin-top: 1.5rem;
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 1rem;
+            display: none;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .error-msg {
+            background: #ffebee;
+            color: #c62828;
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            display: none;
+            margin-bottom: 1rem;
+        }
+
+        .error-msg.active {
+            display: block;
+        }
+
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255,255,255,0.5);
+            border-radius: var(--radius);
+            overflow: hidden;
+            display: none;
+        }
+
+        .result-table.active {
+            display: table;
+        }
+
+        .result-table td {
+            padding: 0.8rem 1.2rem;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .result-table .label {
+            font-weight: 600;
+            color: var(--text-muted);
+            width: 30%;
+        }
+
+        .result-table .value {
+            word-break: break-all;
+        }
+
+        .batch-hint {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        .footer-note {
+            margin-top: 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid rgba(0,0,0,0.06);
+            padding-top: 1.5rem;
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 1.5rem; }
+            h1 { font-size: 1.8rem; }
+            .search-box input { min-width: 100%; }
+            .search-box button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 域名信息查询</h1>
+        <p class="subtitle">输入域名（如 example.com），查看注册信息与到期时间</p>
+
+        <div class="search-box">
+            <input type="text" id="domainInput" placeholder="请输入域名，例如 google.com" />
+            <button id="queryBtn">查询</button>
+        </div>
+
+        <div class="loading" id="loading">⏳ 正在查询，请稍候...</div>
+        <div class="error-msg" id="errorMsg"></div>
+
+        <div class="result-area">
+            <table class="result-table" id="resultTable">
+                <tr><td class="label">域名</td><td class="value" id="rDomain">-</td></tr>
+                <tr><td class="label">注册商</td><td class="value" id="rRegistrar">-</td></tr>
+                <tr><td class="label">注册日期</td><td class="value" id="rCreated">-</td></tr>
+                <tr><td class="label">到期日期</td><td class="value" id="rExpiry">-</td></tr>
+                <tr><td class="label">更新时间</td><td class="value" id="rUpdated">-</td></tr>
+                <tr><td class="label">状态</td><td class="value" id="rStatus">-</td></tr>
+                <tr><td class="label">WHOIS 服务器</td><td class="value" id="rWhois">-</td></tr>
+            </table>
+        </div>
+
+        <div class="batch-hint">💡 支持批量查询，用逗号或换行分隔多个域名（暂仅显示第一个）</div>
+        <div class="footer-note">数据来源：免费 WHOIS API · 信息仅供参考</div>
+    </div>
+
+    <script>
+        // ===== 核心逻辑 =====
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('domainInput');
+            const btn = document.getElementById('queryBtn');
+            const loading = document.getElementById('loading');
+            const errorMsg = document.getElementById('errorMsg');
+            const table = document.getElementById('resultTable');
+
+            // 结果单元格
+            const rDomain = document.getElementById('rDomain');
+            const rRegistrar = document.getElementById('rRegistrar');
+            const rCreated = document.getElementById('rCreated');
+            const rExpiry = document.getElementById('rExpiry');
+            const rUpdated = document.getElementById('rUpdated');
+            const rStatus = document.getElementById('rStatus');
+            const rWhois = document.getElementById('rWhois');
+
+            // 查询函数
+            async function queryWhois(domain) {
+                // 清理输入
+                let cleanDomain = domain.trim().toLowerCase();
+                // 如果包含多个，只取第一个
+                if (cleanDomain.includes(',')) {
+                    cleanDomain = cleanDomain.split(',')[0].trim();
+                } else if (cleanDomain.includes('\n')) {
+                    cleanDomain = cleanDomain.split('\n')[0].trim();
+                }
+                // 移除协议前缀
+                cleanDomain = cleanDomain.replace(/^https?:\/\//, '').replace(/^www\./, '');
+                if (!cleanDomain) {
+                    showError('请输入有效的域名');
+                    return;
+                }
+
+                // 显示加载
+                loading.classList.add('active');
+                table.classList.remove('active');
+                errorMsg.classList.remove('active');
+
+                try {
+                    // 使用免费 WHOIS API (无需密钥，支持跨域)
+                    const url = `https://whois-api.vercel.app/api/whois?domain=${encodeURIComponent(cleanDomain)}`;
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    const data = await response.json();
+
+                    // 检查是否有错误
+                    if (data.error || data.status === 'error') {
+                        throw new Error(data.error || data.message || '查询失败');
+                    }
+
+                    // 提取数据
+                    const whoisData = data.whois || data;
+                    // 根据不同API结构适配
+                    const domainName = whoisData.domain_name || whoisData.domain || cleanDomain;
+                    const registrar = whoisData.registrar || whoisData.registrar_name || '-';
+                    const creationDate = whoisData.creation_date || whoisData.created || '-';
+                    const expiryDate = whoisData.expiration_date || whoisData.expiry || '-';
+                    const updatedDate = whoisData.updated_date || whoisData.updated || '-';
+                    const status = Array.isArray(whoisData.status) ? whoisData.status.join(', ') : (whoisData.status || '-');
+                    const whoisServer = whoisData.whois_server || '-';
+
+                    // 渲染结果
+                    rDomain.textContent = domainName;
+                    rRegistrar.textContent = registrar;
+                    rCreated.textContent = formatDate(creationDate);
+                    rExpiry.textContent = formatDate(expiryDate);
+                    rUpdated.textContent = formatDate(updatedDate);
+                    rStatus.textContent = status;
+                    rWhois.textContent = whoisServer;
+
+                    table.classList.add('active');
+                    loading.classList.remove('active');
+
+                } catch (err) {
+                    loading.classList.remove('active');
+                    showError(`查询失败：${err.message}`);
+                }
+            }
+
+            // 辅助：格式化日期
+            function formatDate(value) {
+                if (!value || value === '-') return '-';
+                // 尝试解析多种日期格式
+                let date = new Date(value);
+                if (isNaN(date.getTime())) {
+                    // 尝试手动解析 "YYYY-MM-DD" 或 "DD-MMM-YYYY"
+                    const parts = value.split(/[-\s/]+/);
+                    if (parts.length === 3) {
+                        // 尝试 DD-MMM-YYYY 如 01-Jan-2020
+                        const months = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+                        if (months[parts[1].toLowerCase()] !== undefined) {
+                            date = new Date(parseInt(parts[2]), months[parts[1].toLowerCase()], parseInt(parts[0]));
+                        } else {
+                            // 尝试 YYYY-MM-DD
+                            date = new Date(value);
+                        }
+                    } else {
+                        date = new Date(value);
+                    }
+                }
+                if (isNaN(date.getTime())) return value;
+                return date.toLocaleDateString('zh-CN', { year:'numeric', month:'2-digit', day:'2-digit' });
+            }
+
+            function showError(msg) {
+                errorMsg.textContent = msg;
+                errorMsg.classList.add('active');
+            }
+
+            // 事件绑定
+            btn.addEventListener('click', () => {
+                queryWhois(input.value);
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    btn.click();
+                }
+            });
+
+            // 预填示例（可选）
+            input.placeholder = '例如 google.com, github.com';
+        });
+    </script>
+</body>
+</html>
