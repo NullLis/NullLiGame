@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
+    <!-- 导航容器（由 common.js 注入） -->
     <div id="navbar-container"></div>
 
     <div class="container">
@@ -24,7 +25,8 @@
                     <div class="icon-big">🔍</div>
                     <h3>域名信息查询</h3>
                     <p>查询域名 WHOIS 信息，包括到期时间、注册商等。</p>
-                    <a href="https://nulllis.github.io/whois-tool/" target="_blank" class="btn btn-outline" style="margin-top: 1rem;">去使用</a>
+                    <!-- 修改点：链接改为同目录下的 whois.html，并移除 target="_blank"（在同一窗口打开） -->
+                    <a href="whois.html" class="btn btn-outline" style="margin-top: 1rem;">去使用</a>
                 </div>
 
                 <!-- 工具卡片2（示例） -->
@@ -46,6 +48,7 @@
         </section>
     </div>
 
+    <!-- 页脚容器 -->
     <div id="footer-container"></div>
 
     <script src="../js/common.js"></script>
