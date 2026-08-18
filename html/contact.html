@@ -23,8 +23,16 @@
             <p class="subtitle">有建议、合作或问题？欢迎通过以下方式找到我们</p>
         </header>
 
-        <!-- 联系方式将由 common.js 从 contact.json 动态生成 -->
         <div class="contact-grid" id="contactGrid"></div>
+
+        <!-- 二维码展示区域（如果 contact.json 中有 qrcode 字段才会显示） -->
+        <div class="qrcode-container" id="qrcodeContainer" style="display: none;">
+            <div class="contact-card qrcode-card">
+                <h3>扫一扫添加我们</h3>
+                <img id="qrcodeImage" src="" alt="二维码" class="qrcode-image" />
+                <p style="color: var(--text-muted); font-size: 0.9rem;">点击图片可放大查看</p>
+            </div>
+        </div>
 
         <p style="text-align: center; color: var(--text-muted);">
             通常 7*24 小时内回复，感谢支持！
@@ -37,6 +45,12 @@
             <a href="#">隐私政策</a>
         </div>
         Built with ❤️ &nbsp;|&nbsp; © 2026 Nulllis
+    </div>
+
+    <!-- 图片放大覆盖层 -->
+    <div id="imageOverlay" class="image-overlay" style="display: none;">
+        <img src="" alt="放大图片" id="overlayImage" />
+        <button class="overlay-close" id="overlayClose">✕</button>
     </div>
 
     <script src="../js/common.js"></script>
