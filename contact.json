@@ -16,8 +16,14 @@
             "text": "@nulllis（微博 / 哔哩哔哩）"
         }
     ],
-    "qrcode": {
-        "image": "../images/精鱼游戏交流群1.png",
-        "alt": "精鱼游戏交流群1"
-    }
+    "images": [
+        {
+            "src": "../images/精鱼游戏交流群1.png",
+            "alt": "精鱼游戏交流群1"
+        },
+        {
+            "src": "../images/精鱼游戏交流群1.png",
+            "alt": "精鱼游戏交流群1"
+        }
+    ]
 }
