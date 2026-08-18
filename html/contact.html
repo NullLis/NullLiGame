@@ -25,14 +25,8 @@
 
         <div class="contact-grid" id="contactGrid"></div>
 
-        <!-- 二维码展示区域（如果 contact.json 中有 qrcode 字段才会显示） -->
-        <div class="qrcode-container" id="qrcodeContainer" style="display: none;">
-            <div class="contact-card qrcode-card">
-                <h3>扫一扫添加我们</h3>
-                <img id="qrcodeImage" src="" alt="二维码" class="qrcode-image" />
-                <p style="color: var(--text-muted); font-size: 0.9rem;">点击图片可放大查看</p>
-            </div>
-        </div>
+        <!-- 二维码图片展示区域（由 JS 动态生成多张图片） -->
+        <div class="qrcode-container" id="qrcodeContainer" style="display: none;"></div>
 
         <p style="text-align: center; color: var(--text-muted);">
             通常 7*24 小时内回复，感谢支持！
