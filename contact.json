@@ -1,0 +1,20 @@
+[
+    {
+        "icon": "📧",
+        "title": "邮箱",
+        "text": "316697487@qq.com",
+        "link": "316697487@qq.com"
+    },
+    {
+        "icon": "🐙",
+        "title": "GitHub",
+        "text": "github.com/nulllis",
+        "link": "https://github.com/nulllis"
+    },
+    {
+        "icon": "💬",
+        "title": "社交媒体",
+        "text": "@nulllis（微博 / 哔哩哔哩）",
+        "link": "#"
+    }
+]
