@@ -5,121 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>域名信息查询</title>
     <link rel="stylesheet" href="../css/style.css" />
-    <!-- 覆盖或补充样式，保持与原工具一致 -->
     <style>
-        /* 补充工具专用样式，不影响公共样式 */
-        .container {
-            max-width: 880px;
-        }
-        .search-box {
-            display: flex;
-            gap: 0.8rem;
-            flex-wrap: wrap;
-            margin-bottom: 2rem;
-        }
-        .search-box input {
-            flex: 1;
-            padding: 0.8rem 1.2rem;
-            border: 2px solid #ddd;
-            border-radius: 50px;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.2s;
-            background: rgba(255,255,255,0.7);
-            min-width: 200px;
-        }
-        .search-box input:focus {
-            border-color: var(--accent-dark);
-        }
-        .search-box button {
-            padding: 0.8rem 2rem;
-            border: none;
-            border-radius: 50px;
-            background: var(--accent-dark);
-            color: #fff;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-            white-space: nowrap;
-        }
-        .search-box button:hover {
-            background: #00695c;
-        }
-        .search-box button:active {
-            transform: scale(0.96);
-        }
-        .result-area {
-            margin-top: 1.5rem;
-        }
-        .loading {
-            text-align: center;
-            color: var(--text-muted);
-            padding: 1rem;
-            display: none;
-        }
-        .loading.active {
-            display: block;
-        }
-        .error-msg {
-            background: #ffebee;
-            color: #c62828;
-            padding: 0.8rem 1.2rem;
-            border-radius: 12px;
-            display: none;
-            margin-bottom: 1rem;
-        }
-        .error-msg.active {
-            display: block;
-        }
-        .result-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: rgba(255,255,255,0.5);
-            border-radius: var(--radius);
-            overflow: hidden;
-            display: none;
-        }
-        .result-table.active {
-            display: table;
-        }
-        .result-table td {
-            padding: 0.8rem 1.2rem;
-            border-bottom: 1px solid rgba(0,0,0,0.06);
-        }
-        .result-table tr:last-child td {
-            border-bottom: none;
-        }
-        .result-table .label {
-            font-weight: 600;
-            color: var(--text-muted);
-            width: 30%;
-        }
-        .result-table .value {
-            word-break: break-all;
-        }
-        .batch-hint {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-top: 0.5rem;
-            text-align: center;
-        }
-        .footer-note {
-            margin-top: 2rem;
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            border-top: 1px solid rgba(0,0,0,0.06);
-            padding-top: 1.5rem;
-        }
-        /* 覆盖公共样式，使header内badge等不至于太挤 */
-        header {
-            margin-bottom: 1.5rem;
-        }
+        .container { max-width: 880px; }
+        .search-box { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 2rem; }
+        .search-box input { flex: 1; padding: 0.8rem 1.2rem; border: 2px solid #ddd; border-radius: 50px; font-size: 1rem; outline: none; background: rgba(255,255,255,0.7); min-width: 200px; }
+        .search-box input:focus { border-color: var(--accent-dark); }
+        .search-box button { padding: 0.8rem 2rem; border: none; border-radius: 50px; background: var(--accent-dark); color: #fff; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+        .search-box button:hover { background: #00695c; }
+        .loading { text-align: center; color: var(--text-muted); padding: 1rem; display: none; }
+        .loading.active { display: block; }
+        .error-msg { background: #ffebee; color: #c62828; padding: 0.8rem 1.2rem; border-radius: 12px; display: none; margin-bottom: 1rem; }
+        .error-msg.active { display: block; }
+        .result-table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.5); border-radius: var(--radius); overflow: hidden; display: none; }
+        .result-table.active { display: table; }
+        .result-table td { padding: 0.8rem 1.2rem; border-bottom: 1px solid rgba(0,0,0,0.06); }
+        .result-table tr:last-child td { border-bottom: none; }
+        .result-table .label { font-weight: 600; color: var(--text-muted); width: 30%; }
+        .result-table .value { word-break: break-all; }
+        .batch-hint { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; text-align: center; }
+        .footer-note { margin-top: 2rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1.5rem; }
+        .manual-link { display: inline-block; margin-top: 0.5rem; color: var(--accent-dark); text-decoration: underline; cursor: pointer; }
+        .manual-link:hover { color: #004d40; }
+        header { margin-bottom: 1.5rem; }
     </style>
 </head>
 <body>
-    <!-- 导航容器（由 common.js 注入） -->
     <div id="navbar-container"></div>
 
     <div class="container">
@@ -135,7 +45,11 @@
         </div>
 
         <div class="loading" id="loading">⏳ 正在查询，请稍候...</div>
-        <div class="error-msg" id="errorMsg"></div>
+        <div class="error-msg" id="errorMsg">
+            <span id="errorText"></span>
+            <br>
+            <a href="#" class="manual-link" id="manualWhois">👉 点击这里前往 whois.com 手动查询</a>
+        </div>
 
         <div class="result-area">
             <table class="result-table" id="resultTable">
@@ -153,23 +67,19 @@
         <div class="footer-note">数据来源：免费 WHOIS API · 信息仅供参考</div>
     </div>
 
-    <!-- 页脚容器 -->
     <div id="footer-container"></div>
 
     <script src="../js/common.js"></script>
-    <!-- 工具逻辑 -->
     <script>
         (function() {
-            // 等待公共组件加载完成后再绑定事件（但公共组件已执行完毕）
             document.addEventListener('DOMContentLoaded', function() {
-                // 但可能 common.js 已经初始化了，我们直接绑定
-                // 为确保元素存在，使用 DOMContentLoaded 或直接放在最后
                 const input = document.getElementById('domainInput');
                 const btn = document.getElementById('queryBtn');
                 const loading = document.getElementById('loading');
                 const errorMsg = document.getElementById('errorMsg');
+                const errorText = document.getElementById('errorText');
+                const manualLink = document.getElementById('manualWhois');
                 const table = document.getElementById('resultTable');
-
                 const rDomain = document.getElementById('rDomain');
                 const rRegistrar = document.getElementById('rRegistrar');
                 const rCreated = document.getElementById('rCreated');
@@ -178,13 +88,16 @@
                 const rStatus = document.getElementById('rStatus');
                 const rWhois = document.getElementById('rWhois');
 
+                // 备用 API 列表（按优先级）
+                const API_ENDPOINTS = [
+                    'https://whois-api.vercel.app/api/whois',
+                    'https://api.whois.vu/whois'
+                ];
+
                 async function queryWhois(domain) {
                     let cleanDomain = domain.trim().toLowerCase();
-                    if (cleanDomain.includes(',')) {
-                        cleanDomain = cleanDomain.split(',')[0].trim();
-                    } else if (cleanDomain.includes('\n')) {
-                        cleanDomain = cleanDomain.split('\n')[0].trim();
-                    }
+                    if (cleanDomain.includes(',')) cleanDomain = cleanDomain.split(',')[0].trim();
+                    else if (cleanDomain.includes('\n')) cleanDomain = cleanDomain.split('\n')[0].trim();
                     cleanDomain = cleanDomain.replace(/^https?:\/\//, '').replace(/^www\./, '');
                     if (!cleanDomain) {
                         showError('请输入有效的域名');
@@ -195,40 +108,54 @@
                     table.classList.remove('active');
                     errorMsg.classList.remove('active');
 
-                    try {
-                        const url = `https://whois-api.vercel.app/api/whois?domain=${encodeURIComponent(cleanDomain)}`;
-                        const response = await fetch(url);
-                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                        const data = await response.json();
+                    let lastError = null;
+                    for (const endpoint of API_ENDPOINTS) {
+                        try {
+                            const url = `${endpoint}?domain=${encodeURIComponent(cleanDomain)}`;
+                            const controller = new AbortController();
+                            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s 超时
+                            const response = await fetch(url, { signal: controller.signal });
+                            clearTimeout(timeoutId);
 
-                        if (data.error || data.status === 'error') {
-                            throw new Error(data.error || data.message || '查询失败');
+                            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                            const data = await response.json();
+                            if (data.error || data.status === 'error') {
+                                throw new Error(data.error || data.message || '查询失败');
+                            }
+                            // 成功，渲染结果
+                            const whoisData = data.whois || data;
+                            const domainName = whoisData.domain_name || whoisData.domain || cleanDomain;
+                            const registrar = whoisData.registrar || whoisData.registrar_name || '-';
+                            const creationDate = whoisData.creation_date || whoisData.created || '-';
+                            const expiryDate = whoisData.expiration_date || whoisData.expiry || '-';
+                            const updatedDate = whoisData.updated_date || whoisData.updated || '-';
+                            const status = Array.isArray(whoisData.status) ? whoisData.status.join(', ') : (whoisData.status || '-');
+                            const whoisServer = whoisData.whois_server || '-';
+
+                            rDomain.textContent = domainName;
+                            rRegistrar.textContent = registrar;
+                            rCreated.textContent = formatDate(creationDate);
+                            rExpiry.textContent = formatDate(expiryDate);
+                            rUpdated.textContent = formatDate(updatedDate);
+                            rStatus.textContent = status;
+                            rWhois.textContent = whoisServer;
+
+                            table.classList.add('active');
+                            loading.classList.remove('active');
+                            return; // 成功则退出
+                        } catch (err) {
+                            lastError = err;
+                            continue; // 尝试下一个 API
                         }
-
-                        const whoisData = data.whois || data;
-                        const domainName = whoisData.domain_name || whoisData.domain || cleanDomain;
-                        const registrar = whoisData.registrar || whoisData.registrar_name || '-';
-                        const creationDate = whoisData.creation_date || whoisData.created || '-';
-                        const expiryDate = whoisData.expiration_date || whoisData.expiry || '-';
-                        const updatedDate = whoisData.updated_date || whoisData.updated || '-';
-                        const status = Array.isArray(whoisData.status) ? whoisData.status.join(', ') : (whoisData.status || '-');
-                        const whoisServer = whoisData.whois_server || '-';
-
-                        rDomain.textContent = domainName;
-                        rRegistrar.textContent = registrar;
-                        rCreated.textContent = formatDate(creationDate);
-                        rExpiry.textContent = formatDate(expiryDate);
-                        rUpdated.textContent = formatDate(updatedDate);
-                        rStatus.textContent = status;
-                        rWhois.textContent = whoisServer;
-
-                        table.classList.add('active');
-                        loading.classList.remove('active');
-
-                    } catch (err) {
-                        loading.classList.remove('active');
-                        showError(`查询失败：${err.message}`);
                     }
+
+                    // 所有 API 均失败
+                    loading.classList.remove('active');
+                    const msg = lastError ? lastError.message : '未知错误';
+                    showError(`查询失败：${msg}，请稍后重试或手动查询。`);
+                    // 设置手动查询链接
+                    manualLink.href = `https://www.whois.com/whois/${encodeURIComponent(cleanDomain)}`;
+                    manualLink.style.display = 'inline-block';
                 }
 
                 function formatDate(value) {
@@ -252,17 +179,20 @@
                 }
 
                 function showError(msg) {
-                    errorMsg.textContent = msg;
+                    errorText.textContent = msg;
                     errorMsg.classList.add('active');
                 }
 
                 btn.addEventListener('click', () => queryWhois(input.value));
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') btn.click();
+                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') btn.click(); });
+
+                // 点击手动查询链接时，隐藏错误提示（可选）
+                manualLink.addEventListener('click', function(e) {
+                    // 允许跳转
                 });
 
-                // 预填示例（可选）
-                input.placeholder = '例如 google.com, github.com';
+                // 初始化时隐藏手动链接
+                manualLink.style.display = 'none';
             });
         })();
     </script>
