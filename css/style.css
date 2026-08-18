@@ -219,7 +219,9 @@ h2 {
     flex-grow: 1;
 }
 
-.card .btn {
+/* 首页卡片按钮样式，同时应用于联系方式卡片按钮 */
+.card .btn,
+.contact-card .btn {
     display: inline-block;
     margin-top: 1.2rem;
     padding: 0.5rem 1.8rem;
@@ -233,7 +235,8 @@ h2 {
     background: transparent;
 }
 
-.card .btn:hover {
+.card .btn:hover,
+.contact-card .btn:hover {
     background: rgba(0, 137, 123, 0.08);
     border-color: #00695c;
     color: #00695c;
