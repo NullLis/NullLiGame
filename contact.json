@@ -1,20 +1,23 @@
-[
-    {
-        "icon": "📧",
-        "title": "邮箱",
-        "text": "316697487@qq.com",
-        "link": "316697487@qq.com"
-    },
-    {
-        "icon": "🐙",
-        "title": "GitHub",
-        "text": "github.com/nulllis",
-        "link": "https://github.com/nulllis"
-    },
-    {
-        "icon": "💬",
-        "title": "社交媒体",
-        "text": "（微博 / 哔哩哔哩）",
-        "link": "#"
+{
+    "contacts": [
+        {
+            "icon": "📧",
+            "title": "邮箱",
+            "text": "nulllis@example.com"
+        },
+        {
+            "icon": "🐙",
+            "title": "GitHub",
+            "text": "github.com/nulllis"
+        },
+        {
+            "icon": "💬",
+            "title": "社交媒体",
+            "text": "@nulllis（微博 / 哔哩哔哩）"
+        }
+    ],
+    "qrcode": {
+        "image": "../images/wechat-qrcode.png",
+        "alt": "微信公众号二维码"
     }
-]
+}
