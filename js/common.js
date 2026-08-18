@@ -72,11 +72,11 @@ function renderProjects(projects) {
     grid.innerHTML = html;
 }
 
-// ===== 加载联系方式与二维码（仅联系页） =====
+// ===== 加载联系方式与图片（仅联系页） =====
 async function loadContactInfo() {
     const contactGrid = document.getElementById('contactGrid');
-    const qrcodeContainer = document.getElementById('qrcodeContainer');
-    if (!contactGrid && !qrcodeContainer) return;
+    const imageGallery = document.getElementById('imageGallery');
+    if (!contactGrid && !imageGallery) return;
 
     try {
         const response = await fetch('../contact.json');
@@ -90,8 +90,8 @@ async function loadContactInfo() {
             if (data.contacts && Array.isArray(data.contacts)) {
                 renderContacts(data.contacts, contactGrid);
             }
-            if (data.qrcodes && Array.isArray(data.qrcodes)) {
-                renderQrcodes(data.qrcodes, qrcodeContainer);
+            if (data.images && Array.isArray(data.images)) {
+                renderImages(data.images, imageGallery);
             }
         }
     } catch (error) {
@@ -122,21 +122,21 @@ function renderContacts(contacts, container) {
     container.innerHTML = html;
 }
 
-// ===== 渲染多个二维码图片 =====
-function renderQrcodes(qrcodes, container) {
+// ===== 渲染多张图片 =====
+function renderImages(images, container) {
     if (!container) return;
-    if (!Array.isArray(qrcodes) || qrcodes.length === 0) {
+    if (!Array.isArray(images) || images.length === 0) {
         container.style.display = 'none';
         return;
     }
 
     container.style.display = 'flex'; // 使用 flex 布局，图片可横向排列
     let html = '';
-    qrcodes.forEach((q, index) => {
-        const alt = q.alt || `图片${index + 1}`;
+    images.forEach((img, index) => {
+        const alt = img.alt || `图片${index + 1}`;
         html += `
-            <div class="qrcode-item">
-                <img src="${q.image}" alt="${alt}" class="qrcode-image" data-index="${index}" />
+            <div class="image-item">
+                <img src="${img.src}" alt="${alt}" class="gallery-image" />
                 <p>${alt}</p>
             </div>
         `;
@@ -148,7 +148,7 @@ function renderQrcodes(qrcodes, container) {
     const overlayImg = document.getElementById('overlayImage');
     const closeBtn = document.getElementById('overlayClose');
 
-    container.querySelectorAll('.qrcode-image').forEach(img => {
+    container.querySelectorAll('.gallery-image').forEach(img => {
         img.addEventListener('click', () => {
             overlayImg.src = img.src;
             overlay.style.display = 'flex';
