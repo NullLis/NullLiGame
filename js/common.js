@@ -65,6 +65,7 @@ function renderProjects(projects) {
                 <div class="icon-big">${p.icon}</div>
                 <h3>${p.title}</h3>
                 <p>${p.description}</p>
+                <a href="${p.link}" target="_blank" class="btn">查看项目</a>
             </div>
         `;
     });
@@ -95,18 +96,12 @@ function renderContacts(contacts, container) {
 
     let html = '';
     contacts.forEach(c => {
-        let contentHtml = '';
-        if (c.link && c.link !== '#') {
-            contentHtml = `<a href="${c.link}" target="_blank" class="btn">${c.text}</a>`;
-        } else {
-            contentHtml = `<p>${c.text}</p>`;
-        }
-
+        // 移除按钮，仅显示纯文本
         html += `
             <div class="contact-card">
                 <div class="contact-icon">${c.icon}</div>
                 <h3>${c.title}</h3>
-                ${contentHtml}
+                <p>${c.text}</p>
             </div>
         `;
     });
