@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>项目集 — 游戏与项目展示</title>
+    <style>
+        /* ===== 全部样式（与 Whether 官网完全一致） ===== */
+        :root {
+            --nav-height: 64px;
+            --accent: #26a69a;
+            --accent-dark: #00897b;
+            --text: #1e272e;
+            --text-muted: #3d4f5f;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(255, 255, 255, 0.7);
+            --shadow-sm: 0 8px 20px rgba(0,0,0,0.05);
+            --shadow-md: 0 12px 28px rgba(0,0,0,0.08);
+            --radius: 20px;
+            --transition: 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+            background: linear-gradient(160deg, #e0f2f1 0%, #b2dfdb 30%, #80cbc4 70%, #4db6ac 100%);
+            background-attachment: fixed;
+            color: var(--text);
+            line-height: 1.7;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-height);
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.7);
+        }
+
+        .nav-logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--accent-dark);
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 0.4rem 0;
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-dark);
+            border-bottom-color: var(--accent-dark);
+        }
+
+        .nav-links a.active {
+            color: var(--accent-dark);
+            border-bottom-color: var(--accent-dark);
+        }
+
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: var(--nav-height);
+                left: 0;
+                width: 100%;
+                flex-direction: column;
+                background: rgba(255,255,255,0.9);
+                backdrop-filter: blur(20px);
+                padding: 1rem 2rem;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .nav-links.active { display: flex; }
+            .nav-toggle { display: block; }
+        }
+
+        .container {
+            flex: 1 0 auto;
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            padding: calc(var(--nav-height) + 2rem) 1.5rem 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        header .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            color: #fff;
+            padding: 0.3rem 1.2rem;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 137, 123, 0.25);
+        }
+
+        header h1 {
+            font-size: 2.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00695c, var(--accent-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.8px;
+            margin-bottom: 0.5rem;
+        }
+
+        header .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        section {
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.2rem;
+            color: var(--text);
+            border-left: 4px solid var(--accent-dark);
+            padding-left: 1rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            padding: 1.8rem 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--card-border);
+            transition: transform var(--transition), box-shadow var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card .icon-big {
+            font-size: 3.2rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0.4rem 0;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            flex-grow: 1;
+        }
+
+        .card .btn {
+            display: inline-block;
+            margin-top: 1.2rem;
+            padding: 0.5rem 1.8rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            color: var(--accent-dark);
+            border: 2px solid var(--accent-dark);
+            background: transparent;
+        }
+
+        .card .btn:hover {
+            background: rgba(0, 137, 123, 0.08);
+            border-color: #00695c;
+            color: #00695c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 137, 123, 0.15);
+        }
+
+        .footer {
+            flex-shrink: 0;
+            width: 100%;
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem 0;
+            border-top: 1px solid rgba(0,0,0,0.08);
+            font-size: 0.9rem;
+        }
+
+        .footer-links {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin: 0 1rem;
+            font-weight: 500;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-dark);
+        }
+
+        @media (max-width: 640px) {
+            header h1 { font-size: 2rem; }
+            .container { padding: calc(var(--nav-height) + 2rem) 1rem 2rem; }
+        }
+
+        /* 空状态提示（当项目列表为空时） */
+        .empty-tip {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px dashed var(--accent-dark);
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <a href="#" class="nav-logo">🧩 项目集</a>
+        <button class="nav-toggle" id="navToggle">☰</button>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#" class="active">首页</a></li>
+            <li><a href="#projects">项目列表</a></li>
+            <li><a href="https://nullis.github.io/PullNail" target="_blank">Whether 官网</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <header>
+            <div class="badge">📌 收录游戏与项目</div>
+            <h1>项目集</h1>
+            <p class="subtitle">收集了各种有趣的项目，点击卡片了解详情</p>
+        </header>
+
+        <section id="projects">
+            <h2>📋 全部项目</h2>
+            <div class="grid-3" id="projectGrid">
+                <!-- 卡片由 JavaScript 动态生成 -->
+            </div>
+        </section>
+    </div>
+
+    <!-- 页脚 -->
+    <div class="footer">
+        <div class="footer-links">
+            <a href="#">服务条款</a>
+            <a href="#">隐私政策</a>
+        </div>
+        Built with ❤️ &nbsp;|&nbsp; © 2026 NullLis
+    </div>
+
+    <script>
+        // ===== 项目数据（在这里增删改项目） =====
+        const projects = [
+            {
+                icon: "🧱",
+                title: "Whether — 是否",
+                description: "道德辩论平台，在是与否之间做出选择。",
+                link: "https://nullis.github.io/PullNail"
+            },
+            {
+                icon: "🎮",
+                title: "游戏 A",
+                description: "一款轻松休闲的益智小游戏，适合放松心情。",
+                link: "#"
+            },
+            {
+                icon: "🎯",
+                title: "游戏 B",
+                description: "考验反应速度与策略，挑战你的最高分。",
+                link: "#"
+            },
+            {
+                icon: "🧩",
+                title: "游戏 C",
+                description: "逻辑推理与解谜，每一关都有新惊喜。",
+                link: "#"
+            },
+            {
+                icon: "🚀",
+                title: "游戏 D",
+                description: "动作冒险，探索未知世界，收集宝藏。",
+                link: "#"
+            },
+            {
+                icon: "📚",
+                title: "项目 X",
+                description: "一个开源工具，帮助开发者提高效率。",
+                link: "#"
+            }
+        ];
+
+        // ===== 渲染卡片 =====
+        function renderProjects() {
+            const grid = document.getElementById('projectGrid');
+            if (projects.length === 0) {
+                grid.innerHTML = '<div class="empty-tip">暂无项目，敬请期待 🚧</div>';
+                return;
+            }
+
+            let html = '';
+            projects.forEach(p => {
+                html += `
+                    <div class="card">
+                        <div class="icon-big">${p.icon}</div>
+                        <h3>${p.title}</h3>
+                        <p>${p.description}</p>
+                        <a href="${p.link}" target="_blank" class="btn">查看项目</a>
+                    </div>
+                `;
+            });
+            grid.innerHTML = html;
+        }
+
+        // ===== 移动端导航切换 =====
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggle = document.getElementById('navToggle');
+            const navLinks = document.getElementById('navLinks');
+            if (toggle && navLinks) {
+                toggle.addEventListener('click', () => {
+                    navLinks.classList.toggle('active');
+                });
+            }
+
+            // 点击导航链接后关闭菜单
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navLinks.classList.remove('active');
+                });
+            });
+
+            // 渲染项目卡片
+            renderProjects();
+        });
+    </script>
+</body>
+</html>
