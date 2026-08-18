@@ -1,3 +1,77 @@
+// ===== 公共导航与页脚（统一管理） =====
+
+// 获取当前页面文件名（用于高亮菜单）
+const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+
+// ===== 生成导航 HTML =====
+function getNavbarHTML() {
+    return `
+    <nav class="navbar">
+        <a href="index.html" class="nav-logo">🧩 项目集</a>
+        <button class="nav-toggle" id="navToggle">☰</button>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="index.html" id="navIndex">首页</a></li>
+            <li><a href="tools.html" id="navTools">🔧 实用工具</a></li>
+            <li><a href="html/contact.html" id="navContact">联系我们</a></li>
+        </ul>
+    </nav>`;
+}
+
+// ===== 生成页脚 HTML =====
+function getFooterHTML() {
+    return `
+    <div class="footer">
+        <div class="footer-links">
+            <a href="#">服务条款</a>
+            <a href="#">隐私政策</a>
+        </div>
+        Built with ❤️ &nbsp;|&nbsp; © 2026 Nulllis
+    </div>`;
+}
+
+// ===== 注入导航和页脚 =====
+function initLayout() {
+    // 导航
+    const navContainer = document.getElementById('navbar-container');
+    if (navContainer) {
+        navContainer.innerHTML = getNavbarHTML();
+        // 高亮当前菜单
+        const map = {
+            'index.html': 'navIndex',
+            'tools.html': 'navTools',
+            'contact.html': 'navContact'
+        };
+        const id = map[currentPage] || 'navIndex';
+        const activeLink = document.getElementById(id);
+        if (activeLink) activeLink.classList.add('active');
+    }
+
+    // 页脚
+    const footerContainer = document.getElementById('footer-container');
+    if (footerContainer) {
+        footerContainer.innerHTML = getFooterHTML();
+    }
+
+    // 移动端导航切换（由 initNavigation 处理）
+    initNavigation();
+}
+
+// ===== 移动端导航切换 =====
+function initNavigation() {
+    const toggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    if (toggle && navLinks) {
+        toggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+            });
+        });
+    }
+}
+
 // ===== 随机主题色生成 =====
 function applyRandomTheme() {
     const h = Math.floor(Math.random() * 360);
@@ -17,22 +91,6 @@ function applyRandomTheme() {
     document.documentElement.style.setProperty('--gradient-mid1', gradientMid1);
     document.documentElement.style.setProperty('--gradient-mid2', gradientMid2);
     document.documentElement.style.setProperty('--gradient-to', gradientTo);
-}
-
-// ===== 移动端导航切换 =====
-function initNavigation() {
-    const toggle = document.getElementById('navToggle');
-    const navLinks = document.getElementById('navLinks');
-    if (toggle && navLinks) {
-        toggle.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-        });
-    }
-    navLinks?.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => {
-            navLinks.classList.remove('active');
-        });
-    });
 }
 
 // ===== 加载项目数据并渲染（仅首页） =====
@@ -83,7 +141,6 @@ async function loadContactInfo() {
         if (!response.ok) throw new Error('无法加载联系方式');
         const data = await response.json();
 
-        // 兼容旧数组格式和新对象格式
         if (Array.isArray(data)) {
             renderContacts(data, contactGrid);
         } else {
@@ -130,7 +187,7 @@ function renderImages(images, container) {
         return;
     }
 
-    container.style.display = 'flex'; // 使用 flex 布局，图片可横向排列
+    container.style.display = 'flex';
     let html = '';
     images.forEach((img, index) => {
         const alt = img.alt || `图片${index + 1}`;
@@ -143,7 +200,6 @@ function renderImages(images, container) {
     });
     container.innerHTML = html;
 
-    // 为所有图片绑定点击放大事件
     const overlay = document.getElementById('imageOverlay');
     const overlayImg = document.getElementById('overlayImage');
     const closeBtn = document.getElementById('overlayClose');
@@ -155,7 +211,6 @@ function renderImages(images, container) {
         });
     });
 
-    // 关闭放大层（点击背景或关闭按钮）
     if (overlay && closeBtn) {
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay || e.target === closeBtn) {
@@ -170,8 +225,15 @@ function renderImages(images, container) {
 
 // ===== 页面初始化 =====
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. 注入导航和页脚（已包含导航高亮 + 移动端切换）
+    initLayout();
+
+    // 2. 随机主题色
     applyRandomTheme();
-    initNavigation();
+
+    // 3. 加载项目数据（如果页面有 projectGrid）
     loadProjects();
+
+    // 4. 加载联系方式（如果页面有 contactGrid）
     loadContactInfo();
 });
