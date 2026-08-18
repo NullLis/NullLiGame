@@ -96,14 +96,21 @@ function renderContacts(contacts, container) {
 
     let html = '';
     contacts.forEach(c => {
-        const textHtml = c.link && c.link !== '#' 
-            ? `<a href="${c.link}" target="_blank" style="color: var(--text-muted); text-decoration: none;">${c.text}</a>`
-            : c.text;
+        // 文本始终显示
+        const textHtml = `<p>${c.text}</p>`;
+
+        // 如果链接有效，添加按钮；否则不添加
+        let btnHtml = '';
+        if (c.link && c.link !== '#') {
+            btnHtml = `<a href="${c.link}" target="_blank" class="btn">访问</a>`;
+        }
+
         html += `
             <div class="contact-card">
                 <div class="contact-icon">${c.icon}</div>
                 <h3>${c.title}</h3>
-                <p>${textHtml}</p>
+                ${textHtml}
+                ${btnHtml}
             </div>
         `;
     });
