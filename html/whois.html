@@ -29,6 +29,10 @@
         .manual-link { display: inline-block; margin-top: 0.5rem; color: var(--accent-dark); text-decoration: underline; cursor: pointer; }
         .manual-link:hover { color: #004d40; }
         header { margin-bottom: 1.5rem; }
+        .raw-data-btn { margin-top: 1rem; background: none; border: 1px solid var(--accent-dark); border-radius: 20px; padding: 0.4rem 1.2rem; color: var(--accent-dark); cursor: pointer; font-size: 0.85rem; }
+        .raw-data-btn:hover { background: rgba(0,137,123,0.1); }
+        .raw-data-box { display: none; background: #2d3436; color: #dfe6e9; padding: 1rem; border-radius: var(--radius); overflow-x: auto; margin-top: 0.5rem; font-family: monospace; font-size: 0.85rem; max-height: 300px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
+        .raw-data-box.active { display: block; }
         @media (max-width: 600px) {
             .search-box select { flex: 1; min-width: 80px; }
         }
@@ -80,6 +84,8 @@
                 <tr><td class="label">状态</td><td class="value" id="rStatus">-</td></tr>
                 <tr><td class="label">WHOIS 服务器</td><td class="value" id="rWhois">-</td></tr>
             </table>
+            <button class="raw-data-btn" id="rawToggle">📋 查看原始返回数据</button>
+            <div class="raw-data-box" id="rawDataBox"></div>
         </div>
 
         <div class="batch-hint">💡 输入完整域名（含后缀）将自动忽略下拉框选项</div>
@@ -100,6 +106,9 @@
                 const errorText = document.getElementById('errorText');
                 const manualLink = document.getElementById('manualWhois');
                 const table = document.getElementById('resultTable');
+                const rawToggle = document.getElementById('rawToggle');
+                const rawBox = document.getElementById('rawDataBox');
+
                 const rDomain = document.getElementById('rDomain');
                 const rRegistrar = document.getElementById('rRegistrar');
                 const rCreated = document.getElementById('rCreated');
@@ -113,17 +122,17 @@
                     'https://api.whois.vu/whois'
                 ];
 
+                // 存储原始数据用于查看
+                let lastRawData = null;
+
                 async function queryWhois(domain) {
                     let raw = domain.trim().toLowerCase();
-                    // 如果输入包含点，则认为是完整域名，否则拼接后缀
                     let fullDomain;
                     if (raw.includes('.')) {
                         fullDomain = raw;
                     } else {
-                        const suffix = suffixSelect.value;
-                        fullDomain = raw + suffix;
+                        fullDomain = raw + suffixSelect.value;
                     }
-                    // 清理可能的多余前缀
                     fullDomain = fullDomain.replace(/^https?:\/\//, '').replace(/^www\./, '');
                     if (!fullDomain || fullDomain === '.') {
                         showError('请输入有效的域名');
@@ -132,6 +141,8 @@
 
                     loading.classList.add('active');
                     table.classList.remove('active');
+                    rawBox.classList.remove('active');
+                    rawBox.textContent = '';
                     errorMsg.classList.remove('active');
 
                     let lastError = null;
@@ -148,14 +159,18 @@
                             if (data.error || data.status === 'error') {
                                 throw new Error(data.error || data.message || '查询失败');
                             }
+                            // 保存原始数据
+                            lastRawData = data;
+                            // 提取信息
                             const whoisData = data.whois || data;
+                            // 尝试多种可能的字段名
                             const domainName = whoisData.domain_name || whoisData.domain || fullDomain;
-                            const registrar = whoisData.registrar || whoisData.registrar_name || '-';
-                            const creationDate = whoisData.creation_date || whoisData.created || '-';
-                            const expiryDate = whoisData.expiration_date || whoisData.expiry || '-';
-                            const updatedDate = whoisData.updated_date || whoisData.updated || '-';
-                            const status = Array.isArray(whoisData.status) ? whoisData.status.join(', ') : (whoisData.status || '-');
-                            const whoisServer = whoisData.whois_server || '-';
+                            const registrar = whoisData.registrar || whoisData.registrar_name || whoisData.registrant || '-';
+                            const creationDate = whoisData.creation_date || whoisData.created || whoisData.registration_date || '-';
+                            const expiryDate = whoisData.expiration_date || whoisData.expiry || whoisData.registrar_registration_expiration_date || '-';
+                            const updatedDate = whoisData.updated_date || whoisData.updated || whoisData.changed || '-';
+                            const status = Array.isArray(whoisData.status) ? whoisData.status.join(', ') : (whoisData.status || whoisData.domain_status || '-');
+                            const whoisServer = whoisData.whois_server || whoisData.whois || '-';
 
                             rDomain.textContent = domainName;
                             rRegistrar.textContent = registrar;
@@ -164,6 +179,11 @@
                             rUpdated.textContent = formatDate(updatedDate);
                             rStatus.textContent = status;
                             rWhois.textContent = whoisServer;
+
+                            // 如果注册商等仍为空，显示提示
+                            if (registrar === '-' && creationDate === '-' && expiryDate === '-') {
+                                // 可能API数据不全，显示原始数据按钮
+                            }
 
                             table.classList.add('active');
                             loading.classList.remove('active');
@@ -210,9 +230,21 @@
                 input.addEventListener('keydown', (e) => { if (e.key === 'Enter') btn.click(); });
 
                 manualLink.style.display = 'none';
-                // 用户可手动输入完整域名，输入框中如果包含点，则禁用下拉框（或保持可选但忽略）
-                // 更友好：当输入包含点时，自动清空下拉框选择？ 不强制，但查询时优先使用完整输入。
-                // 上面的逻辑已实现：包含点则使用完整输入。
+
+                // 显示原始数据
+                rawToggle.addEventListener('click', function() {
+                    if (rawBox.classList.contains('active')) {
+                        rawBox.classList.remove('active');
+                        return;
+                    }
+                    if (lastRawData) {
+                        rawBox.textContent = JSON.stringify(lastRawData, null, 2);
+                        rawBox.classList.add('active');
+                    } else {
+                        rawBox.textContent = '暂无数据，请先查询一个域名。';
+                        rawBox.classList.add('active');
+                    }
+                });
             });
         })();
     </script>
