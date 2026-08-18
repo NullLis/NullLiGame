@@ -273,7 +273,6 @@
             .container { padding: calc(var(--nav-height) + 2rem) 1rem 2rem; }
         }
 
-        /* 空状态提示（当项目列表为空时） */
         .empty-tip {
             text-align: center;
             color: var(--text-muted);
@@ -285,7 +284,6 @@
     </style>
 </head>
 <body>
-    <!-- 导航栏 -->
     <nav class="navbar">
         <a href="#" class="nav-logo">🧩 项目集</a>
         <button class="nav-toggle" id="navToggle">☰</button>
@@ -304,30 +302,24 @@
 
         <section id="projects">
             <h2>📋 列表合集</h2>
-            <div class="grid-3" id="projectGrid">
-                <!-- 卡片由 JavaScript 动态生成 -->
-            </div>
+            <div class="grid-3" id="projectGrid"></div>
         </section>
     </div>
 
-    <!-- 页脚 -->
     <div class="footer">
         <div class="footer-links">
             <a href="#">服务条款</a>
             <a href="#">隐私政策</a>
         </div>
-        Built with ❤️ &nbsp;|&nbsp; © 2026 NullLis
+        Built with ❤️ &nbsp;|&nbsp; © 2026 Nulllis
     </div>
 
     <script>
-        // ===== 从 JSON 文件加载项目数据（已改为 games.json） =====
         async function loadProjects() {
             const grid = document.getElementById('projectGrid');
             try {
                 const response = await fetch('games.json');
-                if (!response.ok) {
-                    throw new Error('无法加载项目数据');
-                }
+                if (!response.ok) throw new Error('无法加载项目数据');
                 const projects = await response.json();
                 renderProjects(projects);
             } catch (error) {
@@ -336,14 +328,12 @@
             }
         }
 
-        // ===== 渲染卡片 =====
         function renderProjects(projects) {
             const grid = document.getElementById('projectGrid');
             if (!Array.isArray(projects) || projects.length === 0) {
                 grid.innerHTML = '<div class="empty-tip">暂无项目，敬请期待 🚧</div>';
                 return;
             }
-
             let html = '';
             projects.forEach(p => {
                 html += `
@@ -358,24 +348,15 @@
             grid.innerHTML = html;
         }
 
-        // ===== 移动端导航切换 =====
         document.addEventListener('DOMContentLoaded', () => {
             const toggle = document.getElementById('navToggle');
             const navLinks = document.getElementById('navLinks');
             if (toggle && navLinks) {
-                toggle.addEventListener('click', () => {
-                    navLinks.classList.toggle('active');
-                });
+                toggle.addEventListener('click', () => navLinks.classList.toggle('active'));
             }
-
-            // 点击导航链接后关闭菜单
             navLinks.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', () => {
-                    navLinks.classList.remove('active');
-                });
+                link.addEventListener('click', () => navLinks.classList.remove('active'));
             });
-
-            // 加载并渲染项目
             loadProjects();
         });
     </script>
