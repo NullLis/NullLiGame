@@ -3,49 +3,37 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>联系我们 — 项目集</title>
+    <title>联系我们</title>
     <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
-    <nav class="navbar">
-        <a href="../index.html" class="nav-logo">🧩 项目集</a>
-        <button class="nav-toggle" id="navToggle">☰</button>
-        <ul class="nav-links" id="navLinks">
-            <li><a href="../index.html">首页</a></li>
-            <li><a href="contact.html" class="active">联系我们</a></li>
-        </ul>
-    </nav>
+    <div id="navbar-container"></div>
 
     <div class="container">
         <header>
-            <div class="badge">📬 保持联络</div>
+            <div class="badge">📬 联系我们</div>
             <h1>联系我们</h1>
-            <p class="subtitle">有建议、合作或问题？欢迎通过以下方式找到我们</p>
+            <p class="subtitle">有任何问题或建议，欢迎随时与我们取得联系</p>
         </header>
 
-        <div class="contact-grid" id="contactGrid"></div>
+        <section id="contact">
+            <h2>📋 联系方式</h2>
+            <div class="grid-3" id="contactGrid"></div>
+        </section>
 
-        <!-- 图片展示区域（由 JS 动态生成多张图片） -->
-        <div class="image-gallery" id="imageGallery" style="display: none;"></div>
+        <section id="gallery">
+            <h2>🖼️ 图片展示</h2>
+            <div id="imageGallery" style="display: none; flex-wrap: wrap; gap: 1rem; justify-content: center;"></div>
+        </section>
 
-        <p style="text-align: center; color: var(--text-muted);">
-            通常 7*24 小时内回复，感谢支持！
-        </p>
-    </div>
-
-    <div class="footer">
-        <div class="footer-links">
-            <a href="#">服务条款</a>
-            <a href="#">隐私政策</a>
+        <!-- 图片放大遮罩层 -->
+        <div id="imageOverlay" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 9999;">
+            <button id="overlayClose" style="position: absolute; top: 20px; right: 30px; font-size: 2rem; background: none; border: none; color: white; cursor: pointer;">&times;</button>
+            <img id="overlayImage" src="" alt="放大预览" style="max-width: 90%; max-height: 90%; object-fit: contain;" />
         </div>
-        Built with ❤️ &nbsp;|&nbsp; © 2026 Nulllis
     </div>
 
-    <!-- 图片放大覆盖层 -->
-    <div id="imageOverlay" class="image-overlay" style="display: none;">
-        <img src="" alt="放大图片" id="overlayImage" />
-        <button class="overlay-close" id="overlayClose">✕</button>
-    </div>
+    <div id="footer-container"></div>
 
     <script src="../js/common.js"></script>
 </body>
