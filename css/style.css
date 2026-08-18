@@ -219,9 +219,8 @@ h2 {
     flex-grow: 1;
 }
 
-/* 首页卡片按钮样式，同时应用于联系方式卡片按钮 */
-.card .btn,
-.contact-card .btn {
+/* 首页卡片按钮样式 */
+.card .btn {
     display: inline-block;
     margin-top: 1.2rem;
     padding: 0.5rem 1.8rem;
@@ -235,8 +234,7 @@ h2 {
     background: transparent;
 }
 
-.card .btn:hover,
-.contact-card .btn:hover {
+.card .btn:hover {
     background: rgba(0, 137, 123, 0.08);
     border-color: #00695c;
     color: #00695c;
@@ -283,6 +281,7 @@ h2 {
     border: 1px dashed var(--accent-dark);
 }
 
+/* 联系页面联系方式卡片 */
 .contact-grid {
     display: grid;
     gap: 1.5rem;
@@ -310,33 +309,47 @@ h2 {
 .contact-card h3 { font-weight: 600; margin-bottom: 0.5rem; }
 .contact-card p { color: var(--text-muted); font-size: 0.95rem; word-break: break-all; }
 
-/* 二维码卡片 */
-.qrcode-container {
-    margin: 0 auto 2rem;
-    max-width: 400px;
-}
-
-.qrcode-card {
+/* ===== 图片画廊（多图展示） ===== */
+.image-gallery {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    margin: 0 auto 2rem;
 }
 
-.qrcode-image {
+.image-item {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--card-border);
+    text-align: center;
     width: 180px;
-    height: 180px;
-    object-fit: cover;
-    border-radius: 12px;
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.image-item:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+}
+
+.gallery-image {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
     cursor: zoom-in;
-    transition: transform 0.2s ease;
 }
 
-.qrcode-image:hover {
-    transform: scale(1.05);
+.image-item p {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    word-break: break-word;
 }
 
-/* 图片放大覆盖层 */
+/* ===== 图片放大覆盖层 ===== */
 .image-overlay {
     position: fixed;
     top: 0;
