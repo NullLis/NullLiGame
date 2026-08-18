@@ -65,7 +65,6 @@ function renderProjects(projects) {
                 <div class="icon-big">${p.icon}</div>
                 <h3>${p.title}</h3>
                 <p>${p.description}</p>
-                <a href="${p.link}" target="_blank" class="btn">查看项目</a>
             </div>
         `;
     });
@@ -96,7 +95,6 @@ function renderContacts(contacts, container) {
 
     let html = '';
     contacts.forEach(c => {
-        // 如果链接有效，将 text 用作按钮文字；否则显示为普通文本
         let contentHtml = '';
         if (c.link && c.link !== '#') {
             contentHtml = `<a href="${c.link}" target="_blank" class="btn">${c.text}</a>`;
