@@ -11,7 +11,6 @@
     --radius: 20px;
     --transition: 0.2s ease;
 
-    /* 背景渐变颜色（默认值，JS 会覆盖） */
     --gradient-from: #e0f2f1;
     --gradient-mid1: #b2dfdb;
     --gradient-mid2: #80cbc4;
@@ -281,7 +280,6 @@ h2 {
     border: 1px dashed var(--accent-dark);
 }
 
-/* 联系页面专用样式 */
 .contact-grid {
     display: grid;
     gap: 1.5rem;
