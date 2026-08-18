@@ -41,7 +41,7 @@ async function loadProjects() {
     if (!grid) return;
 
     try {
-        const response = await fetch('games.json');   // 根目录下的 games.json
+        const response = await fetch('games.json');
         if (!response.ok) throw new Error('无法加载项目数据');
         const projects = await response.json();
         renderProjects(projects);
@@ -72,9 +72,48 @@ function renderProjects(projects) {
     grid.innerHTML = html;
 }
 
+// ===== 加载联系方式并渲染（仅联系页） =====
+async function loadContactInfo() {
+    const grid = document.getElementById('contactGrid');
+    if (!grid) return;
+
+    try {
+        const response = await fetch('../contact.json');
+        if (!response.ok) throw new Error('无法加载联系方式');
+        const contacts = await response.json();
+        renderContacts(contacts, grid);
+    } catch (error) {
+        grid.innerHTML = '<div class="empty-tip">⚠️ 加载联系方式失败，请稍后重试。</div>';
+        console.error('加载 contact.json 出错:', error);
+    }
+}
+
+function renderContacts(contacts, container) {
+    if (!Array.isArray(contacts) || contacts.length === 0) {
+        container.innerHTML = '<div class="empty-tip">暂无联系方式。</div>';
+        return;
+    }
+
+    let html = '';
+    contacts.forEach(c => {
+        const textHtml = c.link && c.link !== '#' 
+            ? `<a href="${c.link}" target="_blank" style="color: var(--text-muted); text-decoration: none;">${c.text}</a>`
+            : c.text;
+        html += `
+            <div class="contact-card">
+                <div class="contact-icon">${c.icon}</div>
+                <h3>${c.title}</h3>
+                <p>${textHtml}</p>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
 // ===== 页面初始化 =====
 document.addEventListener('DOMContentLoaded', () => {
     applyRandomTheme();
     initNavigation();
     loadProjects();
+    loadContactInfo();
 });
