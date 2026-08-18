@@ -7,9 +7,11 @@
     <link rel="stylesheet" href="../css/style.css" />
     <style>
         .container { max-width: 880px; }
-        .search-box { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 2rem; }
-        .search-box input { flex: 1; padding: 0.8rem 1.2rem; border: 2px solid #ddd; border-radius: 50px; font-size: 1rem; outline: none; background: rgba(255,255,255,0.7); min-width: 200px; }
+        .search-box { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center; margin-bottom: 2rem; }
+        .search-box input { flex: 1; padding: 0.8rem 1.2rem; border: 2px solid #ddd; border-radius: 50px; font-size: 1rem; outline: none; background: rgba(255,255,255,0.7); min-width: 180px; }
         .search-box input:focus { border-color: var(--accent-dark); }
+        .search-box select { padding: 0.7rem 1.2rem; border: 2px solid #ddd; border-radius: 50px; font-size: 1rem; background: rgba(255,255,255,0.7); outline: none; min-width: 100px; cursor: pointer; }
+        .search-box select:focus { border-color: var(--accent-dark); }
         .search-box button { padding: 0.8rem 2rem; border: none; border-radius: 50px; background: var(--accent-dark); color: #fff; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
         .search-box button:hover { background: #00695c; }
         .loading { text-align: center; color: var(--text-muted); padding: 1rem; display: none; }
@@ -27,6 +29,9 @@
         .manual-link { display: inline-block; margin-top: 0.5rem; color: var(--accent-dark); text-decoration: underline; cursor: pointer; }
         .manual-link:hover { color: #004d40; }
         header { margin-bottom: 1.5rem; }
+        @media (max-width: 600px) {
+            .search-box select { flex: 1; min-width: 80px; }
+        }
     </style>
 </head>
 <body>
@@ -36,11 +41,25 @@
         <header>
             <div class="badge">🔍 域名查询工具</div>
             <h1>域名信息查询</h1>
-            <p class="subtitle">输入域名（如 example.com），查看注册信息与到期时间</p>
+            <p class="subtitle">输入域名主体（如 google）并选择后缀，或直接输入完整域名</p>
         </header>
 
         <div class="search-box">
-            <input type="text" id="domainInput" placeholder="请输入域名，例如 google.com" />
+            <input type="text" id="domainInput" placeholder="请输入域名主体，例如 google" />
+            <select id="domainSuffix">
+                <option value=".com">.com</option>
+                <option value=".cn">.cn</option>
+                <option value=".net">.net</option>
+                <option value=".org">.org</option>
+                <option value=".io">.io</option>
+                <option value=".app">.app</option>
+                <option value=".xyz">.xyz</option>
+                <option value=".info">.info</option>
+                <option value=".biz">.biz</option>
+                <option value=".co">.co</option>
+                <option value=".top">.top</option>
+                <option value=".online">.online</option>
+            </select>
             <button id="queryBtn">查询</button>
         </div>
 
@@ -63,7 +82,7 @@
             </table>
         </div>
 
-        <div class="batch-hint">💡 支持批量查询，用逗号或换行分隔多个域名（暂仅显示第一个）</div>
+        <div class="batch-hint">💡 输入完整域名（含后缀）将自动忽略下拉框选项</div>
         <div class="footer-note">数据来源：免费 WHOIS API · 信息仅供参考</div>
     </div>
 
@@ -74,6 +93,7 @@
         (function() {
             document.addEventListener('DOMContentLoaded', function() {
                 const input = document.getElementById('domainInput');
+                const suffixSelect = document.getElementById('domainSuffix');
                 const btn = document.getElementById('queryBtn');
                 const loading = document.getElementById('loading');
                 const errorMsg = document.getElementById('errorMsg');
@@ -88,18 +108,24 @@
                 const rStatus = document.getElementById('rStatus');
                 const rWhois = document.getElementById('rWhois');
 
-                // 备用 API 列表（按优先级）
                 const API_ENDPOINTS = [
                     'https://whois-api.vercel.app/api/whois',
                     'https://api.whois.vu/whois'
                 ];
 
                 async function queryWhois(domain) {
-                    let cleanDomain = domain.trim().toLowerCase();
-                    if (cleanDomain.includes(',')) cleanDomain = cleanDomain.split(',')[0].trim();
-                    else if (cleanDomain.includes('\n')) cleanDomain = cleanDomain.split('\n')[0].trim();
-                    cleanDomain = cleanDomain.replace(/^https?:\/\//, '').replace(/^www\./, '');
-                    if (!cleanDomain) {
+                    let raw = domain.trim().toLowerCase();
+                    // 如果输入包含点，则认为是完整域名，否则拼接后缀
+                    let fullDomain;
+                    if (raw.includes('.')) {
+                        fullDomain = raw;
+                    } else {
+                        const suffix = suffixSelect.value;
+                        fullDomain = raw + suffix;
+                    }
+                    // 清理可能的多余前缀
+                    fullDomain = fullDomain.replace(/^https?:\/\//, '').replace(/^www\./, '');
+                    if (!fullDomain || fullDomain === '.') {
                         showError('请输入有效的域名');
                         return;
                     }
@@ -111,9 +137,9 @@
                     let lastError = null;
                     for (const endpoint of API_ENDPOINTS) {
                         try {
-                            const url = `${endpoint}?domain=${encodeURIComponent(cleanDomain)}`;
+                            const url = `${endpoint}?domain=${encodeURIComponent(fullDomain)}`;
                             const controller = new AbortController();
-                            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s 超时
+                            const timeoutId = setTimeout(() => controller.abort(), 15000);
                             const response = await fetch(url, { signal: controller.signal });
                             clearTimeout(timeoutId);
 
@@ -122,9 +148,8 @@
                             if (data.error || data.status === 'error') {
                                 throw new Error(data.error || data.message || '查询失败');
                             }
-                            // 成功，渲染结果
                             const whoisData = data.whois || data;
-                            const domainName = whoisData.domain_name || whoisData.domain || cleanDomain;
+                            const domainName = whoisData.domain_name || whoisData.domain || fullDomain;
                             const registrar = whoisData.registrar || whoisData.registrar_name || '-';
                             const creationDate = whoisData.creation_date || whoisData.created || '-';
                             const expiryDate = whoisData.expiration_date || whoisData.expiry || '-';
@@ -142,19 +167,17 @@
 
                             table.classList.add('active');
                             loading.classList.remove('active');
-                            return; // 成功则退出
+                            return;
                         } catch (err) {
                             lastError = err;
-                            continue; // 尝试下一个 API
+                            continue;
                         }
                     }
 
-                    // 所有 API 均失败
                     loading.classList.remove('active');
                     const msg = lastError ? lastError.message : '未知错误';
                     showError(`查询失败：${msg}，请稍后重试或手动查询。`);
-                    // 设置手动查询链接
-                    manualLink.href = `https://www.whois.com/whois/${encodeURIComponent(cleanDomain)}`;
+                    manualLink.href = `https://www.whois.com/whois/${encodeURIComponent(fullDomain)}`;
                     manualLink.style.display = 'inline-block';
                 }
 
@@ -186,13 +209,10 @@
                 btn.addEventListener('click', () => queryWhois(input.value));
                 input.addEventListener('keydown', (e) => { if (e.key === 'Enter') btn.click(); });
 
-                // 点击手动查询链接时，隐藏错误提示（可选）
-                manualLink.addEventListener('click', function(e) {
-                    // 允许跳转
-                });
-
-                // 初始化时隐藏手动链接
                 manualLink.style.display = 'none';
+                // 用户可手动输入完整域名，输入框中如果包含点，则禁用下拉框（或保持可选但忽略）
+                // 更友好：当输入包含点时，自动清空下拉框选择？ 不强制，但查询时优先使用完整输入。
+                // 上面的逻辑已实现：包含点则使用完整输入。
             });
         })();
     </script>
