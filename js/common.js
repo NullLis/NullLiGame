@@ -72,7 +72,7 @@ function renderProjects(projects) {
     grid.innerHTML = html;
 }
 
-// ===== 加载联系方式和二维码（仅联系页） =====
+// ===== 加载联系方式与二维码（仅联系页） =====
 async function loadContactInfo() {
     const contactGrid = document.getElementById('contactGrid');
     const qrcodeContainer = document.getElementById('qrcodeContainer');
@@ -90,8 +90,8 @@ async function loadContactInfo() {
             if (data.contacts && Array.isArray(data.contacts)) {
                 renderContacts(data.contacts, contactGrid);
             }
-            if (data.qrcode && data.qrcode.image) {
-                renderQrcode(data.qrcode, qrcodeContainer);
+            if (data.qrcodes && Array.isArray(data.qrcodes)) {
+                renderQrcodes(data.qrcodes, qrcodeContainer);
             }
         }
     } catch (error) {
@@ -122,34 +122,46 @@ function renderContacts(contacts, container) {
     container.innerHTML = html;
 }
 
-function renderQrcode(qrcode, container) {
+// ===== 渲染多个二维码图片 =====
+function renderQrcodes(qrcodes, container) {
     if (!container) return;
-    if (!qrcode || !qrcode.image) return;
-
-    container.style.display = 'block';
-    const img = document.getElementById('qrcodeImage');
-    if (img) {
-        img.src = qrcode.image;
-        img.alt = qrcode.alt || '二维码';
+    if (!Array.isArray(qrcodes) || qrcodes.length === 0) {
+        container.style.display = 'none';
+        return;
     }
 
-    // 绑定点击放大事件
+    container.style.display = 'flex'; // 使用 flex 布局，图片可横向排列
+    let html = '';
+    qrcodes.forEach((q, index) => {
+        const alt = q.alt || `图片${index + 1}`;
+        html += `
+            <div class="qrcode-item">
+                <img src="${q.image}" alt="${alt}" class="qrcode-image" data-index="${index}" />
+                <p>${alt}</p>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+
+    // 为所有图片绑定点击放大事件
     const overlay = document.getElementById('imageOverlay');
     const overlayImg = document.getElementById('overlayImage');
     const closeBtn = document.getElementById('overlayClose');
 
-    if (img && overlay && overlayImg && closeBtn) {
+    container.querySelectorAll('.qrcode-image').forEach(img => {
         img.addEventListener('click', () => {
             overlayImg.src = img.src;
             overlay.style.display = 'flex';
         });
+    });
 
+    // 关闭放大层（点击背景或关闭按钮）
+    if (overlay && closeBtn) {
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay || e.target === closeBtn) {
                 overlay.style.display = 'none';
             }
         });
-
         closeBtn.addEventListener('click', () => {
             overlay.style.display = 'none';
         });
