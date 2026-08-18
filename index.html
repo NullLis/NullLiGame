@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>项目集 — 游戏与项目展示</title>
+    <title>项目集展示</title>
     <style>
-        /* ===== 全部样式（与 Whether 官网完全一致） ===== */
         :root {
             --nav-height: 64px;
             --accent: #26a69a;
@@ -291,8 +290,8 @@
         <a href="#" class="nav-logo">🧩 项目集</a>
         <button class="nav-toggle" id="navToggle">☰</button>
         <ul class="nav-links" id="navLinks">
-            <li><a href="#" class="active">列表</a></li>
-            <li><a href="#projects">联系</a></li>
+            <li><a href="#" class="active">首页</a></li>
+            <li><a href="#projects">联系我们</a></li>
         </ul>
     </nav>
 
@@ -321,50 +320,26 @@
     </div>
 
     <script>
-        // ===== 项目数据（在这里增删改项目） =====
-        const projects = [
-            {
-                icon: "🧱",
-                title: "Whether — 是否",
-                description: "道德辩论平台，在是与否之间做出选择。",
-                link: "https://nullis.github.io/PullNail"
-            },
-            {
-                icon: "🎮",
-                title: "游戏 A",
-                description: "一款轻松休闲的益智小游戏，适合放松心情。",
-                link: "#"
-            },
-            {
-                icon: "🎯",
-                title: "游戏 B",
-                description: "考验反应速度与策略，挑战你的最高分。",
-                link: "#"
-            },
-            {
-                icon: "🧩",
-                title: "游戏 C",
-                description: "逻辑推理与解谜，每一关都有新惊喜。",
-                link: "#"
-            },
-            {
-                icon: "🚀",
-                title: "游戏 D",
-                description: "动作冒险，探索未知世界，收集宝藏。",
-                link: "#"
-            },
-            {
-                icon: "📚",
-                title: "项目 X",
-                description: "一个开源工具，帮助开发者提高效率。",
-                link: "#"
+        // ===== 从 JSON 文件加载项目数据（已改为 games.json） =====
+        async function loadProjects() {
+            const grid = document.getElementById('projectGrid');
+            try {
+                const response = await fetch('games.json');
+                if (!response.ok) {
+                    throw new Error('无法加载项目数据');
+                }
+                const projects = await response.json();
+                renderProjects(projects);
+            } catch (error) {
+                grid.innerHTML = '<div class="empty-tip">⚠️ 加载项目数据失败，请稍后重试。</div>';
+                console.error('加载 games.json 出错:', error);
             }
-        ];
+        }
 
         // ===== 渲染卡片 =====
-        function renderProjects() {
+        function renderProjects(projects) {
             const grid = document.getElementById('projectGrid');
-            if (projects.length === 0) {
+            if (!Array.isArray(projects) || projects.length === 0) {
                 grid.innerHTML = '<div class="empty-tip">暂无项目，敬请期待 🚧</div>';
                 return;
             }
@@ -400,8 +375,8 @@
                 });
             });
 
-            // 渲染项目卡片
-            renderProjects();
+            // 加载并渲染项目
+            loadProjects();
         });
     </script>
 </body>
