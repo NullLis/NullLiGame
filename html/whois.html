@@ -7,13 +7,73 @@
     <link rel="stylesheet" href="../css/style.css" />
     <style>
         .container { max-width: 880px; }
-        .search-box { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center; margin-bottom: 2rem; }
+        .search-box { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
         .search-box input { flex: 1; padding: 0.8rem 1.2rem; border: 2px solid #ddd; border-radius: 50px; font-size: 1rem; outline: none; background: rgba(255,255,255,0.7); min-width: 180px; }
         .search-box input:focus { border-color: var(--accent-dark); }
         .search-box select { padding: 0.7rem 1.2rem; border: 2px solid #ddd; border-radius: 50px; font-size: 1rem; background: rgba(255,255,255,0.7); outline: none; min-width: 100px; cursor: pointer; }
         .search-box select:focus { border-color: var(--accent-dark); }
         .search-box button { padding: 0.8rem 2rem; border: none; border-radius: 50px; background: var(--accent-dark); color: #fff; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
         .search-box button:hover { background: #00695c; }
+
+        /* 查询源选择区 */
+        .source-selector {
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(6px);
+            border-radius: var(--radius);
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--card-border);
+        }
+        .source-selector .title {
+            font-weight: 600;
+            margin-right: 1rem;
+            color: var(--text-muted);
+            display: inline-block;
+        }
+        .source-selector .source-group {
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 0.8rem 1.5rem;
+            align-items: center;
+        }
+        .source-selector label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: var(--text);
+        }
+        .source-selector label input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent-dark);
+            cursor: pointer;
+        }
+        .source-selector .actions {
+            display: inline-flex;
+            gap: 0.5rem;
+            margin-left: 1rem;
+        }
+        .source-selector .actions button {
+            background: none;
+            border: 1px solid var(--accent-dark);
+            border-radius: 20px;
+            padding: 0.2rem 0.8rem;
+            font-size: 0.8rem;
+            color: var(--accent-dark);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .source-selector .actions button:hover {
+            background: rgba(0,137,123,0.1);
+        }
+        @media (max-width: 600px) {
+            .source-selector .source-group { display: flex; flex-direction: column; align-items: flex-start; gap: 0.3rem; }
+            .source-selector .actions { margin-left: 0; margin-top: 0.5rem; }
+            .search-box select { flex: 1; min-width: 80px; }
+        }
+
         .loading { text-align: center; color: var(--text-muted); padding: 1rem; display: none; }
         .loading.active { display: block; }
         .error-msg { background: #ffebee; color: #c62828; padding: 0.8rem 1.2rem; border-radius: 12px; display: none; margin-bottom: 1rem; }
@@ -33,9 +93,6 @@
         .raw-data-btn:hover { background: rgba(0,137,123,0.1); }
         .raw-data-box { display: none; background: #2d3436; color: #dfe6e9; padding: 1rem; border-radius: var(--radius); overflow-x: auto; margin-top: 0.5rem; font-family: monospace; font-size: 0.85rem; max-height: 300px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
         .raw-data-box.active { display: block; }
-        @media (max-width: 600px) {
-            .search-box select { flex: 1; min-width: 80px; }
-        }
     </style>
 </head>
 <body>
@@ -65,6 +122,18 @@
                 <option value=".online">.online</option>
             </select>
             <button id="queryBtn">查询</button>
+        </div>
+
+        <!-- 查询源选择器 -->
+        <div class="source-selector">
+            <span class="title">🔌 查询源：</span>
+            <div class="source-group" id="sourceGroup">
+                <!-- 由 JS 动态生成 -->
+            </div>
+            <div class="actions">
+                <button id="selectAllBtn">全选</button>
+                <button id="deselectAllBtn">取消全选</button>
+            </div>
         </div>
 
         <div class="loading" id="loading">⏳ 正在查询，请稍候...</div>
@@ -98,6 +167,15 @@
     <script>
         (function() {
             document.addEventListener('DOMContentLoaded', function() {
+                // ===== 定义 API 源列表 =====
+                const SOURCES = [
+                    { id: 'vercel', name: 'Vercel WHOIS', url: 'https://whois-api.vercel.app/api/whois' },
+                    { id: 'whoisvu', name: 'whois.vu', url: 'https://api.whois.vu/whois' }
+                    // 可继续添加更多源，例如：
+                    // { id: 'whoisws', name: 'whois.ws', url: 'https://whois.ws/whois' }
+                ];
+
+                // DOM 元素
                 const input = document.getElementById('domainInput');
                 const suffixSelect = document.getElementById('domainSuffix');
                 const btn = document.getElementById('queryBtn');
@@ -108,6 +186,9 @@
                 const table = document.getElementById('resultTable');
                 const rawToggle = document.getElementById('rawToggle');
                 const rawBox = document.getElementById('rawDataBox');
+                const sourceGroup = document.getElementById('sourceGroup');
+                const selectAllBtn = document.getElementById('selectAllBtn');
+                const deselectAllBtn = document.getElementById('deselectAllBtn');
 
                 const rDomain = document.getElementById('rDomain');
                 const rRegistrar = document.getElementById('rRegistrar');
@@ -117,12 +198,44 @@
                 const rStatus = document.getElementById('rStatus');
                 const rWhois = document.getElementById('rWhois');
 
-                const API_ENDPOINTS = [
-                    'https://whois-api.vercel.app/api/whois',
-                    'https://api.whois.vu/whois'
-                ];
+                // ===== 渲染源复选框 =====
+                function renderSourceCheckboxes() {
+                    let html = '';
+                    SOURCES.forEach((src, index) => {
+                        html += `
+                            <label>
+                                <input type="checkbox" value="${src.id}" data-url="${src.url}" ${index === 0 ? 'checked' : ''} />
+                                ${src.name}
+                            </label>
+                        `;
+                    });
+                    sourceGroup.innerHTML = html;
+                }
+                renderSourceCheckboxes();
 
-                // 存储原始数据用于查看
+                // ===== 全选 / 取消全选 =====
+                selectAllBtn.addEventListener('click', function() {
+                    const checkboxes = sourceGroup.querySelectorAll('input[type="checkbox"]');
+                    checkboxes.forEach(cb => cb.checked = true);
+                });
+                deselectAllBtn.addEventListener('click', function() {
+                    const checkboxes = sourceGroup.querySelectorAll('input[type="checkbox"]');
+                    checkboxes.forEach(cb => cb.checked = false);
+                });
+
+                // ===== 获取选中的源 URL 列表（按页面顺序） =====
+                function getSelectedSources() {
+                    const checkboxes = sourceGroup.querySelectorAll('input[type="checkbox"]');
+                    const selected = [];
+                    checkboxes.forEach(cb => {
+                        if (cb.checked) {
+                            selected.push(cb.dataset.url);
+                        }
+                    });
+                    return selected;
+                }
+
+                // ===== 核心查询函数 =====
                 let lastRawData = null;
 
                 async function queryWhois(domain) {
@@ -139,6 +252,12 @@
                         return;
                     }
 
+                    const selectedUrls = getSelectedSources();
+                    if (selectedUrls.length === 0) {
+                        showError('请至少选择一个查询源');
+                        return;
+                    }
+
                     loading.classList.add('active');
                     table.classList.remove('active');
                     rawBox.classList.remove('active');
@@ -146,12 +265,12 @@
                     errorMsg.classList.remove('active');
 
                     let lastError = null;
-                    for (const endpoint of API_ENDPOINTS) {
+                    for (const url of selectedUrls) {
                         try {
-                            const url = `${endpoint}?domain=${encodeURIComponent(fullDomain)}`;
+                            const apiUrl = `${url}?domain=${encodeURIComponent(fullDomain)}`;
                             const controller = new AbortController();
                             const timeoutId = setTimeout(() => controller.abort(), 15000);
-                            const response = await fetch(url, { signal: controller.signal });
+                            const response = await fetch(apiUrl, { signal: controller.signal });
                             clearTimeout(timeoutId);
 
                             if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -163,7 +282,6 @@
                             lastRawData = data;
                             // 提取信息
                             const whoisData = data.whois || data;
-                            // 尝试多种可能的字段名
                             const domainName = whoisData.domain_name || whoisData.domain || fullDomain;
                             const registrar = whoisData.registrar || whoisData.registrar_name || whoisData.registrant || '-';
                             const creationDate = whoisData.creation_date || whoisData.created || whoisData.registration_date || '-';
@@ -180,23 +298,19 @@
                             rStatus.textContent = status;
                             rWhois.textContent = whoisServer;
 
-                            // 如果注册商等仍为空，显示提示
-                            if (registrar === '-' && creationDate === '-' && expiryDate === '-') {
-                                // 可能API数据不全，显示原始数据按钮
-                            }
-
                             table.classList.add('active');
                             loading.classList.remove('active');
-                            return;
+                            return; // 成功，退出
                         } catch (err) {
                             lastError = err;
-                            continue;
+                            continue; // 尝试下一个源
                         }
                     }
 
+                    // 所有选中的源均失败
                     loading.classList.remove('active');
                     const msg = lastError ? lastError.message : '未知错误';
-                    showError(`查询失败：${msg}，请稍后重试或手动查询。`);
+                    showError(`所有选中源均查询失败：${msg}，请稍后重试或手动查询。`);
                     manualLink.href = `https://www.whois.com/whois/${encodeURIComponent(fullDomain)}`;
                     manualLink.style.display = 'inline-block';
                 }
@@ -226,6 +340,7 @@
                     errorMsg.classList.add('active');
                 }
 
+                // ===== 事件绑定 =====
                 btn.addEventListener('click', () => queryWhois(input.value));
                 input.addEventListener('keydown', (e) => { if (e.key === 'Enter') btn.click(); });
 
