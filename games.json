@@ -16,5 +16,11 @@
         "title": "游戏 A",
         "description": "一款轻松休闲的益智小游戏，适合放松心情。",
         "link": "#"
+    },
+    {
+        "icon": "🎮",
+        "title": "仙冢壹",
+        "description": "一款单机挂机修仙游戏。",
+        "link": "https://nulllis.github.io/DreamBack"
     }
 ]
